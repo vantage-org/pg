@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -eo pipefail
+shopt -s nullglob
+
+function count_db_containers() {
+    echo $(docker ps -a | grep vg_db | wc -l)
+}
+
+function random_string() {
+    echo $(cat /dev/urandom | tr -dc 'a-z' | fold -w 16 | head -n 1)
+}
+
+function wait_until_up() {
+    while :
+    do
+        set +e
+        docker exec "$1" psql --username postgres &>/dev/null
+        exit_code=$?
+        set -e
+        if [[ "$exit_code" -eq 0 ]]; then
+            break
+        fi
+        sleep 1
+    done
+}
+
+function exec_in() {
+    docker exec "$1" psql --username postgres --command "$2" &>/dev/null
+}
+
+case "$1" in
+    new)
+        if [ -z "$2" ]; then
+            name=vg_db_$(count_db_containers)
+        else
+            name="$2"
+        fi
+        docker run \
+            --detach \
+            --publish-all \
+            --name $name \
+            postgres &>/dev/null
+        wait_until_up $name
+        username=$(random_string)
+        password=$(random_string)
+        database=$(random_string)
+        port=$(docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostPort}}{{end}}' $name)
+        exec_in $name "CREATE DATABASE $database;"
+        exec_in $name "CREATE USER $username WITH PASSWORD '$password';"
+        exec_in $name "GRANT ALL PRIVILEGES ON DATABASE $database TO $username;"
+        echo postgresql://$username:$password@localhost:$port/$database
+        exit $VG_VALID_EXIT
+        ;;
+    rm)
+        docker stop $(docker ps | grep vg_db | cut  -d' ' -f1) &> /dev/null
+        docker rm $(docker ps -a | grep vg_db | cut  -d' ' -f1)
+        ;;
+    shell)
+        if [ -z "$2" ]; then
+            source $VG_ENV_FILE
+        else
+            DATABASE_URL="$2"
+        fi
+        docker run \
+            --interactive \
+            --tty \
+            --net=host \
+            --rm \
+            --name=vg_db_shell \
+            postgres psql --dbname "$DATABASE_URL"
+        ;;
+    dump)
+        if [ -z "$2" ]; then
+            source $VG_ENV_FILE
+        else
+            DATABASE_URL="$2"
+        fi
+        docker run \
+            --net=host \
+            --rm \
+            postgres pg_dump \
+                --format=custom \
+                --no-acl \
+                --no-owner \
+                --schema=public \
+                --dbname="$DATABASE_URL"
+        ;;
+    restore)
+        url=$(vg db new)
+        cat "$2" | docker run \
+            --interactive \
+            --net=host \
+            --rm \
+            --attach stdin \
+            postgres pg_restore \
+                --no-acl --no-owner --schema=public \
+                --dbname="$url"
+        echo "$url"
+        ;;
+    help)
+        echo "    db new - Create a new, empty, DB container"
+        echo "    db rm - Stop and remove *all* DB containers"
+        echo "    db shell [DATABASE_URL] - Open psql pointed at DATABASE_URL"
+        echo "    db dump [DATABASE_URL] - Run pg_dump on DATABSE_URL"
+        echo "    db restore DUMP_FILE - Run pg_restore on DUMP_FILE"
+        ;;
+    *)
+        exit $VG_NOT_IMPLEMENTED_EXIT
+        ;;
+esac
