@@ -2,8 +2,8 @@
 set -eo pipefail
 shopt -s nullglob
 
-function count_db_containers() {
-    echo $(docker ps -a | grep vg_db | wc -l)
+function count_pg_containers() {
+    echo $(docker ps -a | grep vg_pg | wc -l)
 }
 
 function random_string() {
@@ -31,7 +31,7 @@ function exec_in() {
 case "$1" in
     new)
         if [ -z "$2" ]; then
-            name=vg_db_$(count_db_containers)
+            name=vg_pg_$(count_pg_containers)
         else
             name="$2"
         fi
@@ -52,8 +52,8 @@ case "$1" in
         exit $VG_VALID_EXIT
         ;;
     rm)
-        docker stop $(docker ps | grep vg_db | cut  -d' ' -f1) &> /dev/null
-        docker rm $(docker ps -a | grep vg_db | cut  -d' ' -f1)
+        docker stop $(docker ps | grep vg_pg | cut  -d' ' -f1) &> /dev/null
+        docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1)
         ;;
     shell)
         if [ -z "$2" ]; then
@@ -66,7 +66,7 @@ case "$1" in
             --tty \
             --net=host \
             --rm \
-            --name=vg_db_shell \
+            --name=vg_pg_shell \
             postgres psql --dbname "$DATABASE_URL"
         ;;
     dump)
@@ -86,7 +86,7 @@ case "$1" in
                 --dbname="$DATABASE_URL"
         ;;
     restore)
-        url=$(vg db new)
+        url=$(vg pg new)
         cat "$2" | docker run \
             --interactive \
             --net=host \
@@ -98,11 +98,11 @@ case "$1" in
         echo "$url"
         ;;
     help)
-        echo "    db new - Create a new, empty, DB container"
-        echo "    db rm - Stop and remove *all* DB containers"
-        echo "    db shell [DATABASE_URL] - Open psql pointed at DATABASE_URL"
-        echo "    db dump [DATABASE_URL] - Run pg_dump on DATABSE_URL"
-        echo "    db restore DUMP_FILE - Run pg_restore on DUMP_FILE"
+        echo "    pg new - Create a new, empty, DB container"
+        echo "    pg rm - Stop and remove *all* DB containers"
+        echo "    pg shell [DATABASE_URL] - Open psql pointed at DATABASE_URL"
+        echo "    pg dump [DATABASE_URL] - Run pg_dump on DATABSE_URL"
+        echo "    pg restore DUMP_FILE - Run pg_restore on DUMP_FILE"
         ;;
     *)
         exit $VG_NOT_IMPLEMENTED_EXIT
