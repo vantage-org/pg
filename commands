@@ -54,6 +54,7 @@ case "$1" in
     rm)
         docker stop $(docker ps | grep vg_pg | cut  -d' ' -f1) &> /dev/null
         docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1)
+        exit $VG_VALID_EXIT
         ;;
     shell)
         if [ -z "$2" ]; then
@@ -68,6 +69,7 @@ case "$1" in
             --rm \
             --name=vg_pg_shell \
             postgres psql --dbname "$DATABASE_URL"
+        exit $VG_VALID_EXIT
         ;;
     dump)
         if [ -z "$2" ]; then
@@ -84,6 +86,7 @@ case "$1" in
                 --no-owner \
                 --schema=public \
                 --dbname="$DATABASE_URL"
+        exit $VG_VALID_EXIT
         ;;
     restore)
         url=$(vg pg new)
@@ -96,6 +99,7 @@ case "$1" in
                 --no-acl --no-owner --schema=public \
                 --dbname="$url"
         echo "$url"
+        exit $VG_VALID_EXIT
         ;;
     help)
         echo "    pg new - Create a new, empty, DB container"
