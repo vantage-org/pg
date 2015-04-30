@@ -53,8 +53,19 @@ case "$1" in
         exit $VG_VALID_EXIT
         ;;
     rm)
-        docker stop $(docker ps | grep vg_pg | cut  -d' ' -f1) &> /dev/null
-        docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1) &> /dev/null
+        if [ -z "$2" ]; then
+            docker stop $(docker ps | grep vg_pg | cut  -d' ' -f1) &> /dev/null
+            docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1) &> /dev/null
+        else
+            if [ "$2" == "latest" ]; then
+                c=count_pg_containers
+                c=$((c-1))
+            else
+                c="$2"
+            fi
+            docker stop vg_pg_$c
+            docker rm vg_pg_$c
+        fi
         exit $VG_VALID_EXIT
         ;;
     shell)
