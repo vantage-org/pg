@@ -85,7 +85,8 @@ case "$1" in
                 --no-acl \
                 --no-owner \
                 --schema=public \
-                --dbname="$DATABASE_URL"
+                --dbname="$DATABASE_URL" \
+                &> /dev/null
         exit $VG_VALID_EXIT
         ;;
     restore)
@@ -97,7 +98,8 @@ case "$1" in
             --attach stdin \
             postgres pg_restore \
                 --no-acl --no-owner --schema=public \
-                --dbname="$url"
+                --dbname="$url" \
+            &> /dev/null
         echo "$url"
         exit $VG_VALID_EXIT
         ;;
