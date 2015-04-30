@@ -39,7 +39,8 @@ case "$1" in
             --detach \
             --publish-all \
             --name $name \
-            postgres &>/dev/null
+            postgres \
+            &> /dev/null
         wait_until_up $name
         username=$(random_string)
         password=$(random_string)
@@ -53,7 +54,7 @@ case "$1" in
         ;;
     rm)
         docker stop $(docker ps | grep vg_pg | cut  -d' ' -f1) &> /dev/null
-        docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1)
+        docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1) &> /dev/null
         exit $VG_VALID_EXIT
         ;;
     shell)
@@ -69,6 +70,8 @@ case "$1" in
             --rm \
             --name=vg_pg_shell \
             postgres psql --dbname "$DATABASE_URL"
+        docker stop vg_pg_shell &> /dev/null
+        docker rm vg_pg_shell &> /dev/null
         exit $VG_VALID_EXIT
         ;;
     dump)
@@ -85,8 +88,7 @@ case "$1" in
                 --no-acl \
                 --no-owner \
                 --schema=public \
-                --dbname="$DATABASE_URL" \
-                &> /dev/null
+                --dbname="$DATABASE_URL"
         exit $VG_VALID_EXIT
         ;;
     restore)
@@ -94,12 +96,14 @@ case "$1" in
         cat "$2" | docker run \
             --interactive \
             --net=host \
-            --rm \
+            --name=vg_pg_restore \
             --attach stdin \
             postgres pg_restore \
                 --no-acl --no-owner --schema=public \
                 --dbname="$url" \
             &> /dev/null
+        docker stop vg_pg_restore &> /dev/null
+        docker rm vg_pg_restore &> /dev/null
         echo "$url"
         exit $VG_VALID_EXIT
         ;;
@@ -108,7 +112,7 @@ case "$1" in
         echo "    pg rm - Stop and remove *all* DB containers"
         echo "    pg shell [DATABASE_URL] - Open psql pointed at DATABASE_URL"
         echo "    pg dump [DATABASE_URL] - Run pg_dump on DATABSE_URL"
-        echo "    pg restore DUMP_FILE - Run pg_restore on DUMP_FILE"
+        echo "    pg restore DUMP_FILE - Create a new DB and fill with DUMP_FILE"
         ;;
     *)
         exit $VG_NOT_IMPLEMENTED_EXIT
