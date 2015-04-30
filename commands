@@ -58,8 +58,8 @@ case "$1" in
             docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1) &> /dev/null
         else
             if [ "$2" == "latest" ]; then
-                c=count_pg_containers
-                c=$((c-1))
+                c=$(count_pg_containers)
+                c=$(( c-1 ))
             else
                 c="$2"
             fi
