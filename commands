@@ -67,7 +67,6 @@ case "$1" in
             --interactive \
             --tty \
             --net=host \
-            --rm \
             --name=vg_pg_shell \
             postgres psql --dbname "$DATABASE_URL"
         docker stop vg_pg_shell &> /dev/null
