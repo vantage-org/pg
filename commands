@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-set -eo pipefail
-shopt -s nullglob
 
 function count_pg_containers() {
-    echo $(docker ps -a | grep vg_pg | wc -l)
+    echo $(docker ps -a | grep "$VG_RUN_PREFIX"_pg_ | wc -l)
 }
 
 function random_string() {
@@ -13,10 +11,8 @@ function random_string() {
 function wait_until_up() {
     while :
     do
-        set +e
         docker exec "$1" psql --username postgres &>/dev/null
         exit_code=$?
-        set -e
         if [[ "$exit_code" -eq 0 ]]; then
             break
         fi
@@ -30,11 +26,7 @@ function exec_in() {
 
 case "$1" in
     new)
-        if [ -z "$2" ]; then
-            name=vg_pg_$(count_pg_containers)
-        else
-            name="$2"
-        fi
+        name="$VG_RUN_PREFIX"_pg_$(count_pg_containers)
         docker run \
             --detach \
             --publish-all \
@@ -54,42 +46,26 @@ case "$1" in
         ;;
     rm)
         if [ -z "$2" ]; then
-            docker stop $(docker ps | grep vg_pg | cut  -d' ' -f1) &> /dev/null
-            docker rm $(docker ps -a | grep vg_pg | cut  -d' ' -f1) &> /dev/null
+            docker stop $(docker ps | grep "$VG_RUN_PREFIX"_pg_ | cut  -d' ' -f1) &> /dev/null
+            docker rm $(docker ps -a | grep "$VG_RUN_PREFIX"_pg_ | cut  -d' ' -f1) &> /dev/null
         else
-            if [ "$2" == "latest" ]; then
-                c=$(count_pg_containers)
-                c=$(( c-1 ))
-            else
-                c="$2"
-            fi
-            docker stop vg_pg_$c
-            docker rm vg_pg_$c
+            docker stop "$2" &> /dev/null
+            docker rm "$2" &> /dev/null
         fi
         exit $VG_VALID_EXIT
         ;;
     shell)
-        if [ -z "$2" ]; then
-            source $VG_ENV_FILE
-        else
-            DATABASE_URL="$2"
-        fi
+        source "$VG_ENV_FILE"
         docker run \
             --interactive \
             --tty \
+            --rm \
             --net=host \
-            --name=vg_pg_shell \
             postgres psql --dbname "$DATABASE_URL"
-        docker stop vg_pg_shell &> /dev/null
-        docker rm vg_pg_shell &> /dev/null
         exit $VG_VALID_EXIT
         ;;
     dump)
-        if [ -z "$2" ]; then
-            source $VG_ENV_FILE
-        else
-            DATABASE_URL="$2"
-        fi
+        source "$VG_ENV_FILE"
         docker run \
             --net=host \
             --rm \
@@ -106,22 +82,30 @@ case "$1" in
         cat "$2" | docker run \
             --interactive \
             --net=host \
-            --name=vg_pg_restore \
+            --name="$VG_RUN_PREFIX"_pg_restore \
             --attach stdin \
             postgres pg_restore \
                 --no-acl --no-owner --schema=public \
                 --dbname="$url" \
             &> /dev/null
-        docker stop vg_pg_restore &> /dev/null
-        docker rm vg_pg_restore &> /dev/null
+        docker stop "$VG_RUN_PREFIX"_pg_restore &> /dev/null
+        docker rm "$VG_RUN_PREFIX"_pg_restore &> /dev/null
         echo "$url"
+        exit $VG_VALID_EXIT
+        ;;
+    name)
+        source "$VG_ENV_FILE"
+        if [[ "$DATABASE_URL" =~ ^postgresql://.*@localhost:([0-9]*)/.*$ ]]; then
+            port=${BASH_REMATCH[1]}
+        fi
+        docker ps | grep "$VG_RUN_PREFIX"_pg_ | grep "$port" | cut  -d' ' -f7
         exit $VG_VALID_EXIT
         ;;
     help)
         echo "    pg new - Create a new, empty, DB container"
-        echo "    pg rm - Stop and remove *all* DB containers"
-        echo "    pg shell [DATABASE_URL] - Open psql pointed at DATABASE_URL"
-        echo "    pg dump [DATABASE_URL] - Run pg_dump on DATABSE_URL"
+        echo "    pg rm [NAME] - Stop and remove DB containers"
+        echo "    pg shell - Open psql pointed at DATABASE_URL"
+        echo "    pg dump - Run pg_dump on DATABSE_URL"
         echo "    pg restore DUMP_FILE - Create a new DB and fill with DUMP_FILE"
         ;;
     *)
