@@ -1,0 +1,23 @@
+#!/usr/bin/env fish
+
+set pass 0
+
+set o (vantage pg new --name my_test_db)
+
+vantage pg ping --name my_test_db
+
+if test $status -ne 0
+    echo "Could not ping DB my_test_db"
+    set pass 1
+end
+
+set o (docker ps | grep postgres | grep my_test_db | wc -l)
+
+if test "$o" != "1"
+    echo "Expecting docker to have 1 my_test_db it had $o"
+    set pass 1
+end
+
+vantage pg rm --name my_test_db
+
+exit $pass

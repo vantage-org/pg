@@ -1,0 +1,19 @@
+function random_string
+    cat /dev/urandom | tr -dc 'a-z' | fold -w 16 | head -n 1
+end
+
+function wait_until_up
+    while true
+        docker exec "$argv" psql --username postgres > /dev/null ^ /dev/null
+        if test $status -eq 0
+            break
+        end
+        sleep 1
+    end
+end
+
+function exec_in
+    docker exec "$argv[1]" \
+        psql --username postgres --command "$argv[2]" \
+        > /dev/null ^ /dev/null
+end

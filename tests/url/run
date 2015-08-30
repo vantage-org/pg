@@ -1,0 +1,16 @@
+#!/usr/bin/env fish
+
+set pass 0
+
+set actual_url (vantage pg new --name test_url)
+
+set possible_url (vantage pg url test_url)
+
+if test "$actual_url" != "$possible_url"
+    echo "Expecting DB url to be $actual_url, not $possible_url"
+    set pass 1
+end
+
+vantage pg rm --name test_url
+
+exit $pass

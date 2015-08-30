@@ -1,0 +1,18 @@
+#!/usr/bin/env fish
+
+set pass 0
+
+set url (vantage pg new --name test_name_from_env)
+
+vantage env DATABASE_URL "$url"
+
+set name (vantage pg name)
+
+if test "$name" != "test_name_from_env"
+    echo "Expecting DB name to be test_name_from_env, not $name"
+    set pass 1
+end
+
+vantage pg rm --name test_name_from_env
+
+exit $pass

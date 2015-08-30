@@ -1,0 +1,23 @@
+#!/usr/bin/env fish
+
+set pass 0
+
+set count_before (vantage pg count)
+set o (vantage pg new)
+set count_after (vantage pg count)
+
+vantage pg ping --url "$o"
+
+if test $status -ne 0
+    echo "Could not ping DB $o"
+    set pass 1
+end
+
+if not test (math $count_before + 1) -eq $count_after
+    echo "There were $count_before DBs before and $count_after after"
+    set pass 1
+end
+
+vantage pg rm --url "$o"
+
+exit $pass

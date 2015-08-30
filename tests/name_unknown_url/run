@@ -1,0 +1,17 @@
+#!/usr/bin/env fish
+
+set pass 0
+
+set name (vantage pg name "postgresql://username:password@localhost:5432/database")
+
+if test $status -eq 0
+    echo "Expecting failure status code, got $status"
+    set pass 1
+end
+
+if test -n "$name"
+    echo "Expecting empty response, got $name"
+    set pass 1
+end
+
+exit $pass

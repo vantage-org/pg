@@ -1,0 +1,19 @@
+#!/usr/bin/env fish
+
+set pass 0
+
+set count_before (vantage pg count)
+
+docker run --detach --name vg_pg_test_count postgres
+
+set count_after (vantage pg count)
+
+if not test (math $count_before + 1) -eq $count_after
+    echo "Counted $count_before DBs before and $count_after after"
+    set pass 1
+end
+
+docker stop vg_pg_test_count
+docker rm vg_pg_test_count
+
+exit $pass

@@ -1,0 +1,114 @@
+#!/usr/bin/env fish
+
+source "$VG_INSTALL_DIR/functions"
+set here (dirname (status --current-filename))
+source "$here/functions"
+
+switch $argv[1]
+    case 'count'
+        docker ps --all | grep "postgres" | wc -l
+    case 'new' # [--name NAME]
+        set name (get_arg_value "$argv" '--name' '-n')
+        if test -z "$name"
+            set c (vantage pg count)
+            set name "vg_pg_$c"
+        end
+        set database (random_string)
+        set username (random_string)
+        set password (random_string)
+        docker run \
+            --detach \
+            --publish-all \
+            --name "$name" \
+            --label "vantage.database=$database" \
+            --label "vantage.username=$username" \
+            --label "vantage.password=$password" \
+            postgres \
+            > /dev/null ^ /dev/null
+        set port (docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostPort}}{{end}}' "$name")
+        vantage pg ping --url postgresql://postgres@localhost:$port > /dev/null ^ /dev/null
+        if test $status -ne 0
+            exit $status
+        end
+        exec_in "$name" "CREATE DATABASE $database;"
+        exec_in "$name" "CREATE USER $username WITH PASSWORD '$password';"
+        exec_in "$name" "GRANT ALL PRIVILEGES ON DATABASE $database TO $username;"
+        vantage pg ping --url postgresql://$username:$password@localhost:$port/$database > /dev/null ^ /dev/null
+        if test $status -ne 0
+            exit $status
+        end
+        echo postgresql://$username:$password@localhost:$port/$database
+    case 'ping' # vg pg ping [--name NAME] [--url URL]
+        set url (get_arg_value "$argv" '--url' '-u')
+        if test -z "$url"
+            set name (get_arg_value "$argv" '--name' '-n')
+            if test -z "$name"
+                set url (vantage env DATABASE_URL)
+            else
+                set url (vantage pg url "$name")
+            end
+        end
+        if test -z "$url"
+            exit 1
+        end
+        set attempts 10
+        while test $attempts -ne 0
+            set attempts (math $attempts - 1)
+            echo "Trying to connect..."
+            docker run --rm --net=host postgres psql --dbname="$url" > /dev/null ^ /dev/null
+            if test $status -eq 0
+                echo "Connected!"
+                exit 0
+            end
+            sleep 1
+        end
+        echo "Failed to connect :("
+        exit 1
+    case 'name' # vg pg name [URL]
+        if test (count $argv) -eq 1
+            set url (vantage env DATABASE_URL)
+        else
+            set url "$argv[2]"
+        end
+        if test -z "$url"
+            exit 1
+        end
+        set port (echo "$url"| cut -d: -f4 | cut -d/ -f1)
+        set o (docker ps --all | grep postgres | grep ":$port-" | rev | cut -d ' ' -f1 | rev)
+        if test -z "$o"
+            exit 1
+        end
+        echo "$o"
+    case 'url' # vg pg url [NAME]
+        if test (count $argv) -eq 1
+            vantage env DATABASE_URL
+            exit
+        else
+            set name "$argv[2]"
+        end
+        docker ps --all | grep postgres | grep "$name\$" > /dev/null
+        if test $status -ne 0
+            exit 1
+        end
+        set database (docker inspect --format='{{index .Config.Labels "vantage.database"}}' "$name" ^ /dev/null)
+        if test -z "$database"
+            exit 1
+        end
+        set username (docker inspect --format='{{index .Config.Labels "vantage.username"}}' "$name")
+        set password (docker inspect --format='{{index .Config.Labels "vantage.password"}}' "$name")
+        set port (docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostPort}}{{end}}' "$name")
+        echo postgresql://$username:$password@localhost:$port/$database
+    case 'rm'
+        set name (get_arg_value "$argv" '--name' '-n')
+        if test -z "$name"
+            set url (get_arg_value '--url' '-u')
+            set name (vantage pg name "$url")
+        end
+        if test -z "$name"
+            docker stop (docker ps | grep postgres | rev | cut -d ' ' -f1 | rev) > /dev/null ^ /dev/null
+            docker rm (docker ps --all | grep postgres | rev | cut -d ' ' -f1 | rev) > /dev/null ^ /dev/null
+        else
+            docker stop "$name" > /dev/null ^ /dev/null
+            docker rm "$name" > /dev/null ^ /dev/null
+        end
+end
