@@ -1,8 +1,16 @@
 #!/usr/bin/env fish
 
 source "$VG_INSTALL_DIR/functions"
-set here (dirname (status --current-filename))
-source "$here/functions"
+
+function random_string
+    cat /dev/urandom | tr -dc 'a-z' | fold -w 16 | head -n 1
+end
+
+function exec_in
+    docker exec "$argv[1]" \
+        psql --username postgres --command "$argv[2]" \
+        > /dev/null ^ /dev/null
+end
 
 function pg_arg_url
     set url (get_arg_value "$argv" '--url' '-u')
