@@ -2,6 +2,7 @@
 
 set pass 0
 
+# Spin up a new DB and see if we get the right URL back
 set actual_url (vantage pg new --name test_url)
 
 set possible_url (vantage pg url test_url)
@@ -12,5 +13,54 @@ if test "$actual_url" != "$possible_url"
 end
 
 vantage pg rm --name test_url
+
+# This one hasn't been spun up by vantage so we can't grab its details
+docker run --detach --name url_not_pg_name postgres
+
+set url (vantage pg url url_not_pg_name)
+
+set code $status
+
+docker stop url_not_pg_name
+docker rm url_not_pg_name
+
+if test $code -eq 0
+    echo "Expecting failure status code, got $status"
+    set pass 1
+end
+
+if test -n "$url"
+    echo "Expecting empty response, got $url"
+    set pass 1
+end
+
+# This one isn't really a container
+set url (vantage pg url test_url_unknown_name)
+
+if test $status -eq 0
+    echo "Expecting failure status code, got $status"
+    set pass 1
+end
+
+if test -n "$url"
+    echo "Expecting empty response, got $url"
+    set pass 1
+end
+
+# Put the URL in the ENV and see if we can get it back again
+set actual_url (vantage pg new --name test_url_from_env)
+
+vantage env DATABASE_URL "$actual_url"
+
+vantage env
+
+set possible_url (vantage pg url)
+
+if test "$actual_url" != "$possible_url"
+    echo "Expecting DB URL to be $actual_url, not $possible_url"
+    set pass 1
+end
+
+vantage pg rm --name test_url_from_env
 
 exit $pass

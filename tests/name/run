@@ -2,6 +2,7 @@
 
 set pass 0
 
+# Create a new DB with a name and see if we can get it back
 set url (vantage pg new --name test_name)
 
 set name (vantage pg name "$url")
@@ -12,5 +13,32 @@ if test "$name" != "test_name"
 end
 
 vantage pg rm --name test_name
+
+# Put the URL in the ENV and see if we can get the name that way
+set url (vantage pg new --name test_name_from_env)
+
+vantage env DATABASE_URL "$url"
+
+set name (vantage pg name)
+
+if test "$name" != "test_name_from_env"
+    echo "Expecting DB name to be test_name_from_env, not $name"
+    set pass 1
+end
+
+vantage pg rm --name test_name_from_env
+
+# Try to get the name of a DB that doesn't exist
+set name (vantage pg name "postgresql://username:password@localhost:5432/database")
+
+if test $status -eq 0
+    echo "Expecting failure status code, got $status"
+    set pass 1
+end
+
+if test -n "$name"
+    echo "Expecting empty response, got $name"
+    set pass 1
+end
 
 exit $pass

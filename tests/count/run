@@ -14,6 +14,21 @@ if not test (math $count_before + 1) -eq $count_after
 end
 
 docker stop vg_pg_test_count
+
+set count_again (vantage pg count)
+
+if not test $count_again -eq $count_after
+    echo "Counted $count_again DBs after stopping, expecting $count_after"
+    set pass 1
+end
+
 docker rm vg_pg_test_count
+
+set count_again (vantage pg count)
+
+if not test $count_again -eq $count_before
+    echo "Counted $count_again DBs after removing, expecting $count_before"
+    set pass 1
+end
 
 exit $pass
