@@ -20,7 +20,7 @@ end
 function pg_arg_name
     set name (get_arg_value "$argv" '--name' '-n')
     if test -z "$name"
-        set url (get_arg_value '--url' '-u')
+        set url (get_arg_value "$argv" '--url' '-u')
         if test -z "$url"
             set url (vantage env DATABASE_URL)
         end
