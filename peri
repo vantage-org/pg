@@ -41,6 +41,19 @@ function pg_count
     docker ps --all | grep "postgres" | wc -l
 end
 
+function pg_dump
+    set url (pg_arg_url "$argv")
+    docker run \
+        --net=host \
+        --rm \
+        postgres pg_dump \
+            --format=custom \
+            --no-acl \
+            --no-owner \
+            --schema=public \
+            --dbname="$url"
+end
+
 function pg_name
     if test (count $argv) -eq 1
         set url (vantage env DATABASE_URL)
@@ -111,6 +124,30 @@ function pg_ping
     return 1
 end
 
+function pg_restore
+    set name (get_arg_value "$argv" '--name' '-n')
+    if test -z "$name"
+        set c (vantage pg count)
+        set name "vg_pg_$c"
+    end
+    set url (vantage pg new --name "$name")
+    cat "$argv[2]" | docker run \
+        --interactive \
+        --net=host \
+        --name=vg_pg_restore \
+        --attach stdin \
+        postgres pg_restore \
+            --no-acl \
+            --no-owner \
+            --schema=public \
+            --dbname="$url" > /dev/null ^ /dev/null
+    set code $status
+    docker stop vg_pg_restore > /dev/null ^ /dev/null
+    docker rm vg_pg_restore > /dev/null ^ /dev/null
+    echo "$url"
+    return $code
+end
+
 function pg_rm
     if get_arg_flag "$argv" '--all' '-a'
         docker stop (docker ps | grep postgres | rev | cut -d ' ' -f1 | rev) > /dev/null ^ /dev/null
@@ -120,6 +157,16 @@ function pg_rm
         docker stop "$name" > /dev/null ^ /dev/null
         docker rm "$name" > /dev/null ^ /dev/null
     end
+end
+
+function pg_shell
+    set url (pg_arg_url "$argv")
+    docker run \
+        --interactive \
+        --tty \
+        --rm \
+        --net=host \
+        postgres psql --dbname "$url"
 end
 
 function pg_url
@@ -149,27 +196,21 @@ switch $argv[1]
     case 'demo'
         exit 1
     case 'dump'
-        exit 1
+        pg_dump $argv
     case 'migrate'
         exit 1
     case 'name' # vg pg name [URL]
         pg_name $argv
-    case 'new' # [--name NAME]
+    case 'new' # vg pg new [--name NAME]
         pg_new $argv
     case 'ping' # vg pg ping [--name NAME] [--url URL]
         pg_ping $argv
-    case 'restore'
-        exit 1
+    case 'restore' # vg pg restore DUMP_FILE [--name NAME]
+        pg_restore $argv
     case 'rm' 'stop' # vg pg rm [--name NAME] [--url URL] [--all]
         pg_rm $argv
     case 'shell' # vg pg shell [--name NAME] [--url URL]
-        set url (pg_arg_url "$argv")
-        docker run \
-            --interactive \
-            --tty \
-            --rm \
-            --net=host \
-            postgres psql --dbname "$url"
+        pg_shell $argv
     case 'url' # vg pg url [NAME]
         pg_url $argv
 end

@@ -1,0 +1,35 @@
+#!/usr/bin/env fish
+
+set pass 0
+
+set url (vantage pg new --name test_dump)
+
+docker run --net=host --rm postgres psql --dbname "$url" --command "CREATE TABLE counter(value INT);INSERT INTO counter(value) VALUES(1)"
+
+set temp_file (mktemp)
+vantage pg dump --name test_dump > $temp_file
+
+if test $status -ne 0
+    echo "Dump command failed"
+    set pass 1
+end
+
+set url (vantage pg restore $temp_file --name test_restore)
+
+if test $status -ne 0
+    echo "Restore command failed"
+    set pass 1
+end
+
+set o (docker run --net=host --rm postgres psql --no-align --tuples-only --dbname "$url" --command "SELECT * FROM counter")
+
+if test "$o" != "1"
+    echo "Thought SQL query should return 1, it returned $o"
+    set pass 1
+end
+
+rm $temp_file
+vantage pg rm --name test_dump
+vantage pg rm --name test_restore
+
+exit $pass
