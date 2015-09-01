@@ -154,8 +154,14 @@ switch $argv[1]
         exit 1
     case 'rm' 'stop' # vg pg rm [--name NAME] [--url URL] [--all]
         pg_rm $argv
-    case 'shell'
-        exit 1
+    case 'shell' # vg pg shell [--name NAME] [--url URL]
+        set url (pg_arg_url "$argv")
+        docker run \
+            --interactive \
+            --tty \
+            --rm \
+            --net=host \
+            postgres psql --dbname "$url"
     case 'url' # vg pg url [NAME]
         pg_url $argv
 end
