@@ -7,18 +7,20 @@ set --export --global VG_PG_DEMO_LOCATION "$here/demo.dump"
 
 set url (vantage pg demo --name test_demo)
 
+echo "Using DB at $url"
+
 set o (docker run --net=host --rm postgres psql --no-align --tuples-only --dbname "$url" --command "SELECT * FROM counter")
 
 if test "$o" != "1"
-    echo "Thought SQL query should return 1, it returned $o"
+    echo "Thought first SQL query should return 1, it returned $o"
     set pass 1
 end
 
 set temp_file (mktemp)
 set --export --global VG_PG_DEMO_LOCATION "$temp_file"
-vantage pg dump --save --url "$url"
+vantage pg demo --save --url "$url"
 
-set url (vantage pg restore $temp_file --name test_restore)
+set url (vantage pg restore "$temp_file" --name test_restore)
 
 if test $status -ne 0
     echo "Restore command failed"
@@ -28,8 +30,11 @@ end
 set o (docker run --net=host --rm postgres psql --no-align --tuples-only --dbname "$url" --command "SELECT * FROM counter")
 
 if test "$o" != "1"
-    echo "Thought SQL query should return 1, it returned $o"
+    echo "Thought second SQL query should return 1, it returned $o"
     set pass 1
 end
+
+vantage pg rm --name test_demo
+vantage pg rm --name test_restore
 
 exit $pass
