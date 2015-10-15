@@ -138,12 +138,15 @@ function pg_ping
 end
 
 function pg_restore
-    set name (get_arg_value "$argv" '--name' '-n')
-    if test -z "$name"
-        set c (vantage pg count)
-        set name "vg_pg_$c"
+    set url (get_arg_value "$argv" '--url' '-u')
+    if test -z "$url"
+        set name (get_arg_value "$argv" '--name' '-n')
+        if test -z "$name"
+            set c (vantage pg count)
+            set name "vg_pg_$c"
+        end
+        set url (vantage pg new --name "$name")
     end
-    set url (vantage pg new --name "$name")
     cat "$argv[2]" | docker run \
         --interactive \
         --net=host \
