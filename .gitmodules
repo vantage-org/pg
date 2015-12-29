@@ -1,0 +1,3 @@
+[submodule "pgweb"]
+	path = pgweb
+	url = https://github.com/sosedoff/pgweb.git
