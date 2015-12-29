@@ -67,7 +67,9 @@ function pg_demo
         vantage pg dump --url "$url" > "$VG_PG_DEMO_LOCATION"
     else
         set name (get_arg_value "$argv" '--name' '-n')
-        vantage pg restore "$VG_PG_DEMO_LOCATION" --name "$name"
+        set url (vantage pg restore "$VG_PG_DEMO_LOCATION" --name "$name")
+        vantage env DATABASE_URL "$url"
+        echo "$url"
     end
 end
 
@@ -114,11 +116,13 @@ function pg_new
     exec_in "$name" "CREATE DATABASE $database;"
     exec_in "$name" "CREATE USER $username WITH PASSWORD '$password';"
     exec_in "$name" "GRANT ALL PRIVILEGES ON DATABASE $database TO $username;"
-    vantage pg ping --url postgresql://$username:$password@localhost:$port/$database > /dev/null ^ /dev/null
+    vantage pg ping --url "postgresql://$username:$password@localhost:$port/$database" > /dev/null ^ /dev/null
     if test $status -ne 0
         return $status
     end
-    echo postgresql://$username:$password@localhost:$port/$database
+    set url "postgresql://$username:$password@localhost:$port/$database"
+    vantage env DATABASE_URL "$url"
+    echo "$url"
 end
 
 function pg_ping
