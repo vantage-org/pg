@@ -33,5 +33,9 @@ pg rm [--name|-n NAME] [--url|-u URL] [--all|-a]
 pg shell [--name|-n NAME] [--url|-u URL]
     Drop into a psql shell pointed at --name, --url, or DATABASE_URL
 pg url [NAME]
-    Print the URL for the database called NAME, if known"
+    Print the URL for the database called NAME, if known
+pg web [--name|-n NAME] [--url|-u URL]
+    Start a pgweb server pointing at your DB
+    https://github.com/sosedoff/pgweb
+"
 end

@@ -60,7 +60,7 @@ function pg_demo
     end
     if not test -f "$VG_PG_DEMO_LOCATION"
         echo "No demo data at $VG_PG_DEMO_LOCATION"
-        exit 1
+        return 1
     end
     if get_arg_flag "$argv" '--save' '-s'
         set url (pg_arg_url "$argv")
@@ -210,6 +210,23 @@ function pg_url
     echo postgresql://$username:$password@localhost:$port/$database
 end
 
+function pg_web
+    set url (pg_arg_url "$argv")
+    if test -z "$url"
+        return 1
+    end
+    set ids (docker images --quiet pgweb)
+    if test -z "$ids"
+        set here (dirname (status --current-filename))
+        docker build -t pgweb "$here/pgweb" > /dev/null ^ /dev/null
+    end
+    docker run \
+        --net=host \
+        --rm \
+        --publish 8081:8081 --env DATABASE_URL="$url" \
+        pgweb
+end
+
 switch $argv[1]
     case 'count'
         pg_count
@@ -231,6 +248,8 @@ switch $argv[1]
         pg_shell $argv
     case 'url' # vg pg url [NAME]
         pg_url $argv
+    case 'web' # vg pg web [--name NAME] [--url URL]
+        pg_web $argv
 end
 
 exit $status
