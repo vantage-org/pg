@@ -3,6 +3,14 @@
 set pass 0
 
 set here (dirname (status --current-filename))
+
+set --export --global VG_PG_DEMO_LOCATION "$here/not-a-demo.dump"
+vantage pg demo --name test_demo
+if test $status -eq 0
+    echo "Managed to restore a fake demo file"
+    set pass 1
+end
+
 set --export --global VG_PG_DEMO_LOCATION "$here/demo.dump"
 
 set url (vantage pg demo --name test_demo)

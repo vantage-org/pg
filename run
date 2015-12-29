@@ -58,6 +58,10 @@ function pg_demo
     if test -z "$VG_PG_DEMO_LOCATION"
         set --global --export VG_PG_DEMO_LOCATION "$VG_APP_DIR/demo.dump"
     end
+    if not test -f "$VG_PG_DEMO_LOCATION"
+        echo "No demo data at $VG_PG_DEMO_LOCATION"
+        exit 1
+    end
     if get_arg_flag "$argv" '--save' '-s'
         set url (pg_arg_url "$argv")
         vantage pg dump --url "$url" > "$VG_PG_DEMO_LOCATION"

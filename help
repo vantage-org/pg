@@ -10,7 +10,7 @@ pg count
 pg demo [--save|-s [--url|-u URL]] [--name|-n NAME]
     Create a new database container filled with demo data
     --save takes the database at --name, --url, or DATABASE_URL and dumps it
-    into the default demo location.
+    into the demo location.
     The default demo location is $VG_APP_DIR/demo.dump but it can be changed
     by setting the VG_PG_DEMO_LOCATION config value
 pg dump [--name|-n NAME] [--url|-u URL]
