@@ -1,0 +1,44 @@
+#!/bin/bash
+set -e
+
+function help {
+    cat << EOF >&2
+usage: vantage pg dump|new|ping|restore|rm|shell|web
+
+This plugin assumes that a database URI will be available at the ENV variable
+DATABASE_URL. It should look something like this:
+
+    postgres://USERNAME:PASSWORD@HOST:PORT/DB_NAME
+
+vg pg dump
+    Output a simple pg_dump of the DB to stdout
+
+vg pg new
+    Create a new postgreSQL DB and save the URI to the default env file (if it
+    exists)
+
+vg pg ping
+    Try to connect to the DB
+
+vg pg restore DUMP_FILE
+    Restore the DB from the DUMP_FILE into a new DB
+
+vg pg rm [-a]
+    Remove the DB container, or all containers if the -a flag is set
+
+vg pg shell
+    Open a psql shell pointed at the DB
+
+vg pg web
+    Start up a pgweb instance pointed at the DB. Open up HOST:8081 to view
+EOF
+}
+
+if [ -n "$VG_SHOW_HELP" ]; then
+    help
+    exit
+fi
+
+echo "vantage: pg: No command given"
+help
+exit 1
