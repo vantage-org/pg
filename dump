@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+url=$(vg __env DATABASE_URL)
+
+docker run \
+    --rm \
+    postgres pg_dump \
+        --format=custom \
+        --no-acl \
+        --no-owner \
+        --schema=public \
+        --dbname="$url"

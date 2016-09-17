@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+url=$(vg pg new)
+vg -v "DATABASE_URL=$url" pg ping > /dev/null
+
+docker run \
+    --volume "$1:/data.dump" \
+    --rm \
+    postgres pg_restore \
+        --no-acl \
+        --no-owner \
+        --schema=public \
+        --dbname="$url" \
+        /data.dump > /dev/null
+
+echo $url

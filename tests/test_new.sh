@@ -22,7 +22,7 @@ container_id=$(docker ps --quiet --filter "label=vantage.pg.db_name=$db_name")
 assert_raises "test -n $container_id"
 assert_raises "test 1 -eq $(echo $container_id | wc -l)"
 
-vg pg rm -a
+vg pg rm -a > /dev/null
 rm "$env_file"
 
 assert_end new
