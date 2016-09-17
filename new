@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+function random_string {
+    head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12
+}
+
+
+
+USERNAME=$(random_string)
+PASSWORD=$(random_string)
+DB_NAME=$(random_string)
+
+CONTAINER=$(docker run \
+    --env POSTGRES_USER=$USERNAME \
+    --env POSTGRES_PASSWORD=$PASSWORD \
+    --env POSTGRES_DB=$DB_NAME \
+    --label vantage.pg.db_name="$DB_NAME" \
+    --publish 5432 \
+    --detach \
+    postgres)
+
+IP=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $CONTAINER)
+
+DB="postgres://$USERNAME:$PASSWORD@$IP:5432/$DB_NAME"
+
+vg __env DATABASE_URL "$DB"
+
+echo "$DB"

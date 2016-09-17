@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+function stop_and_remove {
+    docker ps --quiet --all --filter "$1" | while IFS='' read -r container_id
+    do
+        echo "Removing $container_id"
+        docker stop "$container_id" > /dev/null
+        docker rm "$container_id" > /dev/null
+    done
+}
+
+while getopts ":a" opt; do
+    case $opt in
+        a)
+            stop_and_remove "label=vantage.pg.db_name"
+            exit
+            ;;
+    esac
+done
+
+url=$(vg __env DATABASE_URL)
+db_name=${url##*/}
+
+stop_and_remove "label=vantage.pg.db_name=$db_name"
