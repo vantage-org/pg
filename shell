@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+url=$(vg __env DATABASE_URL)
+
+docker run \
+    --interactive \
+    --tty \
+    --rm \
+    postgres psql --dbname "$url"
