@@ -1,0 +1,16 @@
+#!/bin/bash
+
+url=$(vg __env DATABASE_URL)
+
+while :
+do
+    echo -n "Trying to connect..."
+    docker run --rm postgres psql --dbname="$url" &> /dev/null
+    if [ $? -eq 0 ]; then
+        echo " Success!"
+        exit 0
+    else
+        echo " Failed"
+    fi
+    sleep 1
+done
