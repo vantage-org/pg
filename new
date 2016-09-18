@@ -15,7 +15,7 @@ CONTAINER=$(docker run \
     --env POSTGRES_USER=$USERNAME \
     --env POSTGRES_PASSWORD=$PASSWORD \
     --env POSTGRES_DB=$DB_NAME \
-    --label vantage.pg.db_name="$DB_NAME" \
+    --label vantage.pg=1 \
     --publish 5432 \
     --detach \
     postgres)

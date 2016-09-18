@@ -2,24 +2,31 @@
 set -e
 
 function stop_and_remove {
-    docker ps --quiet --all --filter "$1" | while IFS='' read -r container_id
+    docker ps --quiet --all --filter "label=vantage.pg" | while IFS='' read -r CID
     do
-        echo "Removing $container_id"
-        docker stop "$container_id" > /dev/null
-        docker rm "$container_id" > /dev/null
+        if [ -n "$1" ]; then
+            IP=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $CID)
+            if [ "$1" != "$IP" ]; then
+                break
+            fi
+        fi
+        echo "Removing $CID"
+        docker stop "$CID" > /dev/null
+        docker rm "$CID" > /dev/null
     done
 }
 
 while getopts ":a" opt; do
     case $opt in
         a)
-            stop_and_remove "label=vantage.pg.db_name"
+            stop_and_remove
             exit
             ;;
     esac
 done
 
-url=$(vg __env DATABASE_URL)
-db_name=${url##*/}
+URL=$(vg __env DATABASE_URL)
+IP=${URL##*@}
+IP=${IP%%:*}
 
-stop_and_remove "label=vantage.pg.db_name=$db_name"
+stop_and_remove "$IP"
