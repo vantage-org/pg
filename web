@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-url=$(vg __env DATABASE_URL)
+URL=$(vg __env DATABASE_URL)
 
 docker run \
     --publish 8081:8081 \
     --rm \
-    --env "DATABASE_URL=$url" \
+    --env "DATABASE_URL=$URL" \
     sosedoff/pgweb /usr/bin/pgweb --bind=0.0.0.0 --listen=8081 --skip-open --ssl=disable

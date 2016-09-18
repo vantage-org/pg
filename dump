@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-url=$(vg __env DATABASE_URL)
+URL=$(vg __env DATABASE_URL)
 
 docker run \
     --rm \
@@ -10,4 +10,4 @@ docker run \
         --no-acl \
         --no-owner \
         --schema=public \
-        --dbname="$url"
+        --dbname="$URL"

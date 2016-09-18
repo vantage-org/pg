@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-url=$(vg pg new)
-vg -v "DATABASE_URL=$url" pg ping > /dev/null
+URL=$(vg pg new)
+vg -v "DATABASE_URL=$URL" pg ping > /dev/null
 
 docker run \
     --volume "$1:/data.dump" \
@@ -11,7 +11,7 @@ docker run \
         --no-acl \
         --no-owner \
         --schema=public \
-        --dbname="$url" \
+        --dbname="$URL" \
         /data.dump > /dev/null
 
-echo $url
+echo $URL
