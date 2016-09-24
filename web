@@ -3,8 +3,10 @@ set -e
 
 URL=$(vg __env DATABASE_URL)
 
+SSL="--ssl=${VG_PG_WEB_SSLMODE:-require}"
+
 docker run \
     --publish 8081:8081 \
     --rm \
     --env "DATABASE_URL=$URL" \
-    sosedoff/pgweb /usr/bin/pgweb --bind=0.0.0.0 --listen=8081 --skip-open --ssl=disable
+    sosedoff/pgweb /usr/bin/pgweb --bind=0.0.0.0 --listen=8081 --skip-open $SSL
