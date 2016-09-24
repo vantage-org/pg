@@ -4,14 +4,17 @@ set -e
 URL=$(vg pg new)
 vg -v "DATABASE_URL=$URL" pg ping > /dev/null
 
+FILE=$(basename "$1")
+DIR=$(cd "$(dirname "$1")" && pwd -P)
+
 docker run \
-    --volume "$1:/data.dump" \
+    --volume "$DIR:/data" \
     --rm \
     postgres pg_restore \
         --no-acl \
         --no-owner \
         --schema=public \
         --dbname="$URL" \
-        /data.dump > /dev/null
+        "/data/$FILE" > /dev/null
 
 echo $URL
