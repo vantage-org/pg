@@ -3,8 +3,14 @@ set -e
 
 URL=$(vg __env DATABASE_URL)
 
+NETWORK=""
+if [ -n "$VG_DOCKER_NETWORK" ]; then
+    NETWORK="--network=$VG_DOCKER_NETWORK"
+fi
+
 docker run \
     --interactive \
     --tty \
     --rm \
-    postgres psql --dbname "$URL"
+    $NETWORK \
+    postgres:9.6 psql --dbname "$URL"

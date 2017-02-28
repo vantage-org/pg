@@ -7,9 +7,15 @@ vg -v "DATABASE_URL=$URL" pg ping > /dev/null
 FILE=$(basename "$1")
 DIR=$(cd "$(dirname "$1")" && pwd -P)
 
+NETWORK=""
+if [ -n "$VG_DOCKER_NETWORK" ]; then
+    NETWORK="--network=$VG_DOCKER_NETWORK"
+fi
+
 docker run \
     --volume "$DIR:/data" \
     --rm \
+    $NETWORK \
     postgres pg_restore \
         --no-acl \
         --no-owner \

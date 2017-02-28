@@ -3,8 +3,14 @@ set -e
 
 URL=$(vg __env DATABASE_URL)
 
+NETWORK=""
+if [ -n "$VG_DOCKER_NETWORK" ]; then
+    NETWORK="--network=$VG_DOCKER_NETWORK"
+fi
+
 docker run \
     --rm \
+    $NETWORK \
     postgres pg_dump \
         --format=custom \
         --no-acl \
