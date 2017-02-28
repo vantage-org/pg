@@ -18,8 +18,7 @@ assert_raises "test $url == $(vg -e "$env_file" __env DATABASE_URL)"
 
 # Should set the vantage.pg label
 container_id=$(docker ps --quiet --filter "label=vantage.pg=1")
-assert_raises "test -n $container_id"
-assert_raises "test 1 -eq $(echo $container_id | wc -l)"
+assert_raises "test 0 -ne $(echo $container_id | wc -l)"
 
 vg pg rm -a > /dev/null
 rm "$env_file"
