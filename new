@@ -8,7 +8,7 @@ function random_string {
 USERNAME=$(random_string)
 PASSWORD=$(random_string)
 DB_NAME=$(random_string)
-CONTAINER_NAME="vg_pg_$(random_string)"
+CONTAINER_NAME="vg-pg-$(random_string)"
 
 NETWORK=""
 if [ -n "$VG_DOCKER_NETWORK" ]; then
