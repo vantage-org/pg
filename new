@@ -2,7 +2,7 @@
 set -e
 
 function random_string {
-    head /dev/urandom | LC_ALL=C tr -dc A-Za-z0-9 | head -c 12
+    head /dev/urandom | LC_ALL=C tr -dc a-z0-9 | head -c 12
 }
 
 USERNAME=$(random_string)
