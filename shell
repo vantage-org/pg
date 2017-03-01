@@ -13,4 +13,4 @@ docker run \
     --tty \
     --rm \
     $NETWORK \
-    postgres:9.6 psql --dbname "$URL"
+    postgres psql --dbname "$URL"
