@@ -8,7 +8,7 @@ if [ -n "$VG_DOCKER_NETWORK" ]; then
 fi
 
 ATTEMPTS=10
-while [ $ATTEMPTS -ge 0 ]; do
+while [ $ATTEMPTS -gt 0 ]; do
     ATTEMPTS=$(( $ATTEMPTS - 1 ))
     echo -n "Trying to connect..."
     docker run --rm $NETWORK postgres psql --dbname="$URL" &> /dev/null
