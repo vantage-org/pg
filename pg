@@ -3,7 +3,7 @@ set -e
 
 function help {
     cat << EOF >&2
-usage: vantage pg dump|new|ping|restore|rm|shell|web
+usage: vantage pg dump|fixtures|migrate|new|ping|restore|rm|shell|web
 
 This plugin assumes that a database URI will be available at the ENV variable
 DATABASE_URL. It should look something like this:
@@ -12,6 +12,8 @@ DATABASE_URL. It should look something like this:
 
 Commands:
     dump - Output a simple pg_dump of the DB to stdout
+    fixtures FIXTURE_NUMBER [FIXTURE_NUMBER...] - Load fixture data
+    migrate MIGRATION_NUMBER [MIGRATION_NUMBER...] - Run schema migrations
     new - Create a new postgreSQL DB and save the URI to the default env file
     ping - Try to connect to the DB
     restore DUMP_FILE - Restore the DB from the DUMP_FILE into a new DB
