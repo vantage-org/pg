@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-URL=$(vg pg new)
-vg -v "DATABASE_URL=$URL" pg ping > /dev/null
+URL=$(vantage pg new)
+vantage --var "DATABASE_URL=$URL" pg ping > /dev/null
 
 FILE=$(basename "$1")
 DIR=$(cd "$(dirname "$1")" && pwd -P)
@@ -15,7 +15,7 @@ fi
 docker run \
     --volume "$DIR:/data" \
     --rm \
-    $NETWORK \
+    "$NETWORK" \
     postgres pg_restore \
         --no-acl \
         --no-owner \
@@ -23,4 +23,4 @@ docker run \
         --dbname="$URL" \
         "/data/$FILE" > /dev/null
 
-echo $URL
+echo "$URL"

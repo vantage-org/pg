@@ -1,22 +1,22 @@
 #! /bin/bash
 set -eu
 
-FIXTURES_DIR="${VG_PG_FIXTURES_DIR:-$VG_APP_DIR/fixtures}"
+MIGRATIONS_DIR="${VG_PG_MIGRATIONS_DIR:-$VG_APP_DIR/migrations}"
 
-URL=$(vg __env DATABASE_URL)
+URL=$(vantage __env DATABASE_URL)
 
 NETWORK=""
 if [ -n "$VG_DOCKER_NETWORK" ]; then
     NETWORK="--network=$VG_DOCKER_NETWORK"
 fi
 
-for i in $@; do
-    for path in "$FIXTURES_DIR/$i-"*.sql; do
+for i in "$@"; do
+    for path in "$MIGRATIONS_DIR/$i-"*.sql; do
         name=$(basename "$path")
         docker run \
-            --volume "$FIXTURES_DIR:/data" \
+            --volume "$MIGRATIONS_DIR:/data" \
             --rm \
-            $NETWORK \
+            "$NETWORK" \
             postgres psql --dbname "$URL" --file "/data/$name"
     done
 done
