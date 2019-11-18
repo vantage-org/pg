@@ -1,0 +1,16 @@
+#!/bin/sh
+# ---
+# image:
+#   tag: "postgres:$VG_PG_VERSION"
+#   network: $VG_DOCKER_NETWORK
+#   rm: true
+# defaults:
+#   VG_PG_VERSION: latest
+#   VG_DOCKER_NETWORK: host
+# ---
+pg_dump \
+    --format=custom \
+    --no-acl \
+    --no-owner \
+    --schema=public \
+    --dbname="$DATABASE_URL"
