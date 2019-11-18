@@ -1,0 +1,40 @@
+#!/bin/sh
+set -e
+
+printf "\nTEST: Creating a new database\n"
+"$VG_BINARY" pg new
+
+printf "\nTEST: Pinging the database\n"
+"$VG_BINARY" pg ping
+
+printf "\nTEST: Creating some data\n"
+"$VG_BINARY" pg run "CREATE TABLE foo (comment TEXT);"
+"$VG_BINARY" pg run "INSERT INTO foo (comment) VALUES ('does this work');"
+
+printf "\nTEST: Dumping the database\n"
+"$VG_BINARY" pg dump > "$VG_APP_DIR/test.dump"
+
+printf "\nTEST: Removing the database\n"
+"$VG_BINARY" pg rm
+
+printf "\nTEST: Trying to ping again (should fail)\n"
+set +e
+if "$VG_BINARY" pg ping; then
+    exit 1
+fi
+set -e
+
+printf "\nTEST: Creating a fresh database\n"
+"$VG_BINARY" pg new
+
+printf "\nTEST: Restoring the dump into it\n"
+"$VG_BINARY" pg restore < "$VG_APP_DIR/test.dump"
+
+printf "\nTEST: Querying some data\n"
+"$VG_BINARY" pg run "SELECT * FROM foo;" | grep work
+
+printf "\nTEST: Creating another new database\n"
+"$VG_BINARY" pg new
+
+printf "\nTEST: Removing both running databases\n"
+"$VG_BINARY" pg rm -a
