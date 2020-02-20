@@ -2,11 +2,12 @@
 # ---
 # help-text: Restore a database dump into the current database
 # image:
-#   tag: "postgres:$VG_PG_VERSION"
+#   tag: "$VG_PG_TAG:$VG_PG_VERSION"
 #   network: $VG_DOCKER_NETWORK
 #   rm: true
 #   interactive: true
 # defaults:
+#   VG_PG_TAG: postgres
 #   VG_PG_VERSION: latest
 #   VG_DOCKER_NETWORK: host
 # ---
