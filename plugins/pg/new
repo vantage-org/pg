@@ -23,7 +23,7 @@ CONTAINER=$(docker run \
     --name "$CONTAINER_NAME" \
     --network "$NETWORK" \
     --publish "$PORT" \
-    "postgres:${VG_PG_VERSION:-latest}")
+    "${VG_PG_TAG:-postgres}:${VG_PG_VERSION:-latest}")
 
 if [ -n "$VG_DOCKER_NETWORK" ]; then
     HOST="$CONTAINER_NAME"
