@@ -11,7 +11,7 @@ stop_and_remove_all() {
 stop_and_remove() {
     echo "Removing $1"
     docker stop "$1" > /dev/null
-    docker rm "$1" > /dev/null
+    docker rm -v "$1" > /dev/null
 }
 
 while getopts ":a" opt; do
