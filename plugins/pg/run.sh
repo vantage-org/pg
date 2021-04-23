@@ -6,14 +6,13 @@
 #   interactive: true
 #   tty: true
 #   rm: true
-# defaults:
-#   VG_PG_TAG: postgres
-#   VG_PG_VERSION: latest
-#   VG_DOCKER_NETWORK: host
+# environment:
+#   - VG_PG_TAG=postgres
+#   - VG_PG_VERSION=latest
+#   - VG_DOCKER_NETWORK=host
 # ---
 if [ -n "$1" ] ; then
     psql --dbname "$DATABASE_URL" --command "$1"
 else
     psql --dbname "$DATABASE_URL"
 fi
-

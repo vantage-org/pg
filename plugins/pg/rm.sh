@@ -25,6 +25,6 @@ while getopts ":a" opt; do
     esac
 done
 
-URL=$("$VG_BINARY" __env DATABASE_URL)
+URL=$(vg __env DATABASE_URL)
 DB_NAME=$(echo "$URL" | rev | cut -d'/' -f1 | rev)
 stop_and_remove "vg-pg-$DB_NAME"

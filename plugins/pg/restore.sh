@@ -6,10 +6,10 @@
 #   network: $VG_DOCKER_NETWORK
 #   rm: true
 #   interactive: true
-# defaults:
-#   VG_PG_TAG: postgres
-#   VG_PG_VERSION: latest
-#   VG_DOCKER_NETWORK: host
+# environment:
+#   - VG_PG_TAG=postgres
+#   - VG_PG_VERSION=latest
+#   - VG_DOCKER_NETWORK=host
 # ---
 pg_restore \
     --no-acl \
