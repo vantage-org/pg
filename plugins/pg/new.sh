@@ -10,7 +10,8 @@ PASSWORD="$(random_string)"
 DB_NAME="$(random_string)"
 CONTAINER_NAME="vg-pg-$DB_NAME"
 
-NETWORK="${VG_DOCKER_NETWORK:-bridge}"
+NETWORK="${VG_DOCKER_NETWORK:-vg_pg}"
+docker network create "$NETWORK" > /dev/null 2> /dev/null || true
 PORT=${VG_PG_PORT:-5432}
 
 CONTAINER=$(docker run \
@@ -25,18 +26,11 @@ CONTAINER=$(docker run \
     --publish "$PORT" \
     "${VG_PG_TAG:-postgres}:${VG_PG_VERSION:-latest}")
 
-if [ -n "$VG_DOCKER_NETWORK" ]; then
-    HOST="$CONTAINER_NAME"
-else
-    HOST='localhost'
-    PORT=$(docker inspect --format '{{(index (index .NetworkSettings.Ports "5432/tcp") 0).HostPort}}' "$CONTAINER")
-fi
-
-DB="postgresql://$USERNAME:$PASSWORD@$HOST:$PORT/$DB_NAME"
+DB="postgresql://$USERNAME:$PASSWORD@$CONTAINER_NAME:$PORT/$DB_NAME"
 
 vg __env "DATABASE_URL=$DB"
 vg __env "DATABASE_NAME=$DB_NAME"
-vg __env "DATABASE_HOST=$HOST"
+vg __env "DATABASE_HOST=$CONTAINER_NAME"
 vg __env "DATABASE_PORT=$PORT"
 vg __env "DATABASE_USERNAME=$USERNAME"
 vg __env "DATABASE_PASSWORD=$PASSWORD"

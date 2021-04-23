@@ -22,9 +22,9 @@ This will spin up a Postgres container and print out the URL that you can use to
 If you have set the config variable `VG_DEFAULT_ENV` then the database details be saved to it like this:
 
     ...
-    DATABASE_URL=postgresql://SRwVJCz7ZHIb:k0MZCIHJuSlO@localhost:5432/0DvSMqCe7HKp
+    DATABASE_URL=postgresql://SRwVJCz7ZHIb:k0MZCIHJuSlO@vg_pg:5432/0DvSMqCe7HKp
     DATABASE_NAME=0DvSMqCe7HKp
-    DATABASE_HOST=localhost
+    DATABASE_HOST=vg_pg
     DATABASE_PORT=5432
     DATABASE_USERNAME=SRwVJCz7ZHIb
     DATABASE_PASSWORD=k0MZCIHJuSlO
@@ -32,14 +32,11 @@ If you have set the config variable `VG_DEFAULT_ENV` then the database details b
 
 This lets you immediately access the database, for instance using `vg pg run`.
 
-If you'd like to create the container inside a docker network, you have to set the `VG_DOCKER_NETWORK` config variable. This can be added to an env file, or you can specify it on the command line:
+The database will be connected to a docker network called `vg_pg`. To specify your own network just set the `VG_DOCKER_NETWORK` env variable in your `.vantage` file:
 
-    $ docker network create my-network
-    d8936e965c9657c26fd23c523f558c7911a936ed590b5e06a9ec50669ffc9580
-    $ vg --var VG_DOCKER_NETWORK=my-network pg new
-    postgresql://FaFVRI2ah4nG:xNIV1MXJ76jU@vg_pg_hqj9wxXNO1PY:5432/kZysjogYtPog
-
-This time round the URL doesn't contain the IP address of the container, but instead a randomised name.
+    ...
+    VG_DOCKER_NETWORK=my-network
+    ...
 
 If you want to use a specific version of postgres then you can set the following env variables in your `.vantage` file:
 
