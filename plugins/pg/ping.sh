@@ -15,12 +15,8 @@ ATTEMPTS=10
 echo "Trying to connect..."
 while [ $ATTEMPTS -gt 0 ]; do
     ATTEMPTS=$(expr "$ATTEMPTS" - 1 )
-    if psql --dbname="$DATABASE_URL" 2> /dev/null
-    then
-        echo " Success!"
+    if pg_isready --dbname="$DATABASE_URL"; then
         exit 0
-    else
-        echo " Failed..."
     fi
     sleep 1
 done
