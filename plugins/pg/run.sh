@@ -4,7 +4,6 @@
 #   tag: "$VG_PG_TAG:$VG_PG_VERSION"
 #   network: $VG_DOCKER_NETWORK
 #   interactive: true
-#   tty: true
 #   rm: true
 # environment:
 #   - VG_PG_TAG=postgres

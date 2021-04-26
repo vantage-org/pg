@@ -6,7 +6,6 @@
 #   network: $VG_DOCKER_NETWORK
 #   rm: true
 #   interactive: true
-#   tty: true
 # environment:
 #   - VG_PG_TAG=postgres
 #   - VG_PG_VERSION=latest
