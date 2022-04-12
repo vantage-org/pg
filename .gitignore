@@ -5,4 +5,4 @@
 .DS_Store
 /bak
 /pg.tar.gz
-/test.dump
+/test.sql

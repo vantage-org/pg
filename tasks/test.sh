@@ -12,7 +12,7 @@ vg pg run "CREATE TABLE foo (comment TEXT);"
 vg pg run "INSERT INTO foo (comment) VALUES ('does this work');"
 
 printf "\nTEST: Dumping the database\n"
-vg pg dump > "$VG_APP_DIR/test.dump"
+vg pg dump > "$VG_APP_DIR/test.sql"
 
 printf "\nTEST: Removing the database\n"
 vg pg rm
@@ -26,9 +26,10 @@ set -e
 
 printf "\nTEST: Creating a fresh database\n"
 vg pg new
+vg pg ping
 
 printf "\nTEST: Restoring the dump into it\n"
-vg pg restore < "$VG_APP_DIR/test.dump"
+cat "$VG_APP_DIR/test.sql" | vg pg run
 
 printf "\nTEST: Querying some data\n"
 vg pg run "SELECT * FROM foo;" | grep work
